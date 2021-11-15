@@ -80,7 +80,7 @@ schema = strawberry.Schema(Query)
       await pyodide.loadPackage('micropip')
       await pyodide.runPythonAsync(`
         import micropip
-        await micropip.install('/strawberry_graphql-0.87.1-py3-none-any.whl')
+        await micropip.install('./strawberry_graphql-0.87.1-py3-none-any.whl')
       `)
       refresh()
   }
