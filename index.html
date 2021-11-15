@@ -16,6 +16,7 @@
 loading...
 </div>
 <div id="content" style="display:none">
+
 <div>python code</div>
 <textarea id="myeditor">
 import strawberry
@@ -30,7 +31,7 @@ schema = strawberry.Schema(Query)
 </textarea>
 
 <div>schema</div>
-<div id="myschema">
+<div id="myschema" style="white-space: pre">
 </div>
 
 <div>query</div>
@@ -57,7 +58,6 @@ schema = strawberry.Schema(Query)
   });
 
   const queryeditor = CodeMirror.fromTextArea(myquery, {
-
     lineNumbers: true,
   });
 
@@ -69,6 +69,7 @@ schema = strawberry.Schema(Query)
     const code = editor.getValue()
     pyodide.runPython(code)
     schema = pyodide.globals.get('schema')
+    myschema.textContent = schema.__str__()
     myresult.textContent = execute(queryeditor.getValue())
   }
 
