@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.18.1/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.3/codemirror.min.js" integrity="sha512-XMlgZzPyVXf1I/wbGnofk1Hfdx+zAWyZjh6c21yGo/k1zNC4Ve6xcQnTDTCHrjFGsOrVicJsBURLYktVEu/8vQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.3/codemirror.min.css" integrity="sha512-6sALqOPMrNSc+1p5xOhPwGIzs6kIlST+9oGWlI4Wwcbj1saaX9J3uzO3Vub016dmHV7hM+bMi/rfXLiF5DNIZg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.63.3/mode/python/python.min.js" integrity="sha512-/mavDpedrvPG/0Grj2Ughxte/fsm42ZmZWWpHz1jCbzd5ECv8CB7PomGtw0NAnhHmE/lkDFkRMupjoohbKNA1Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  </head>
+</script>
+<body>
+
+<!--
+<button onclick="refresh()">refresh python</button>
+-->
+<div>python code</div>
+<textarea id="myeditor">
+import strawberry
+
+@strawberry.type
+class Query:
+  @strawberry.field
+  def hello() -> str:
+    return 'world'
+  
+schema = strawberry.Schema(Query)
+</textarea>
+
+<div>schema</div>
+<div id="myschema">
+</div>
+
+<div>query</div>
+<textarea id="myquery" >
+{
+  hello
+}
+</textarea>
+
+<div>result</div>
+<div id="myresult" >
+</div>
+
+<script type="text/javascript">
+  // editor
+  const myeditor = document.getElementById('myeditor')
+  const myquery = document.getElementById('myquery')
+  const myresult = document.getElementById('myresult')
+  const myschema= document.getElementById('myschema')
+
+  const editor = CodeMirror.fromTextArea(myeditor, {
+    lineNumbers: true,
+  });
+
+  const queryeditor = CodeMirror.fromTextArea(myquery, {
+
+    lineNumbers: true,
+  });
+
+  let pyodide
+  let schema
+
+  function refresh() {
+    console.log('refresh')
+    const code = editor.getValue()
+    pyodide.runPython(code)
+    schema = pyodide.globals.get('schema')
+    myresult.textContent = execute(queryeditor.getValue())
+  }
+
+  function execute(query) {
+    const result = schema.execute_sync(query)
+    return result.data.toString()
+  }
+
+  // pyodide
+  async function init() {
+      pyodide = await loadPyodide({
+          indexURL : "https://cdn.jsdelivr.net/pyodide/v0.18.1/full/"
+        })
+      await pyodide.loadPackage('micropip')
+      await pyodide.runPythonAsync(`
+        import micropip
+        await micropip.install('/strawberry/dist/strawberry_graphql-0.87.1-py3-none-any.whl')
+      `)
+      refresh()
+  }
+
+  init()
+
+  function debounce(func, timeout = 500){
+    let timer;
+    return (...args) => {
+      clearTimeout(timer)
+      timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    }
+  }
+
+
+  editor.on('change', debounce(refresh))
+  queryeditor.on('change', debounce(refresh))
+</script>
+
+</body>
+</html>
