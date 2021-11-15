@@ -12,6 +12,10 @@
 <!--
 <button onclick="refresh()">refresh python</button>
 -->
+<div id="loading">
+loading...
+</div>
+<div id="content" style="display:none">
 <div>python code</div>
 <textarea id="myeditor">
 import strawberry
@@ -38,6 +42,7 @@ schema = strawberry.Schema(Query)
 
 <div>result</div>
 <div id="myresult" >
+</div>
 </div>
 
 <script type="text/javascript">
@@ -83,11 +88,15 @@ schema = strawberry.Schema(Query)
         await micropip.install('./strawberry_graphql-0.87.1-py3-none-any.whl')
       `)
       refresh()
+      document.getElementById('loading').style='display:none'
+      document.getElementById('content').style=''
+      editor.refresh()
+      queryeditor.refresh()
   }
 
   init()
 
-  function debounce(func, timeout = 500){
+  function debounce(func, timeout = 200){
     let timer;
     return (...args) => {
       clearTimeout(timer)
